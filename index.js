@@ -4,11 +4,15 @@ const cheerio = require("cheerio");
 const rp = require('request-promise');
 const clear = require('./clear');
 
-clear();
-
 var movieName = process.argv[2];
 var time = process.argv[3];
+var imdbApiKey = "6b41a668e25ec6c8670df1fc29641a7d";
 
+//clear console before execution
+clear();
+
+
+//if required parameters are missing
 if (!movieName) {
     movieName = readlineSync.question("Please enter the movie name: ");
 }
@@ -17,23 +21,29 @@ if (!time) {
     time = readlineSync.question("Please enter wait time for spoiler(in seconds): ");
 }
 
-
-var imdbApiKey = "6b41a668e25ec6c8670df1fc29641a7d";
+//create globals on the basis of user arguments
 var imdbRequestUrl = "https://api.themoviedb.org/3/search/movie?api_key=" + imdbApiKey + "&query=" + movieName;
-var googleRequestUrl = "https://www.google.ca/search?q=" + movieName;
+var googleRequestUrl = "https://www.google.ca/search?q=" + movieName +"+film";
 var timeInMS = secToMS(time);
 
+/**
+ * @summary Returns Spoiler warning for user.
+ */
 var warning = (movieName, time) => {
     return "**spoiler warning** we will be spoiling the plot of " + movieName + " in " + timeInMS + " seconds: \n";
 }
 
-//console.log('\x1b[31m%s\x1b[34m%s\x1b[0m', 'I am cyan','i am blue');
-
+/**
+ * @summary Constructor function for movie plot.
+ */
 function Plot(title, details) {
     this.title = title;
     this.details = details;
 }
 
+/**
+ * @summary Checks if the user input for time is valid and converts it into ms.
+ */
 function secToMS(time) {
     timeInMS = parseInt(time) * 1000
     if (isNaN(timeInMS)) {
@@ -43,6 +53,10 @@ function secToMS(time) {
     return timeInMS;
 }
 
+
+/**
+ * @summary Fetch and disply the movie spoler.
+ */
 rp(imdbRequestUrl)
     .then(function (response) {
         let results = JSON.parse(response).results;
@@ -51,9 +65,6 @@ rp(imdbRequestUrl)
         setTimeout(function () {
             if (results.length) {
                 spoiler = new Plot(results[0].title, results[0].overview);
-                
-                //wait for given time before giving google
-
                 console.log('\x1b[32m%s\x1b[0m', "Spoiler for the movie - " + movieName);
                 console.log('\x1b[32m%s\x1b[0m', "================================================\n")
                 console.log("Name: " + spoiler.title + "\n");
@@ -68,6 +79,9 @@ rp(imdbRequestUrl)
     });
 
 
+/**
+ * @summary Fetch and display the google results for the movie.
+ */
 request(googleRequestUrl, function (error, response, body) {
     if (!error) {
         var $ = cheerio.load(body);
