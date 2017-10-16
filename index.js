@@ -70,7 +70,7 @@ rp(imdbRequestUrl)
                 console.log("Name: " + spoiler.title + "\n");
                 console.log("Plot: " + spoiler.details + "\n");
             } else {
-                console.log("Please enter a valid movie name")
+                console.log('\n\x1b[31m%s\x1b[0m',"Please enter a valid movie name\n");
             }
         }, timeInMS);
     })
